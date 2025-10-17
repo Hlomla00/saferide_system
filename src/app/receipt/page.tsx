@@ -24,7 +24,7 @@ function ReceiptContent() {
     if (isClient) {
       const timer = setTimeout(() => {
         router.push('/booking');
-      }, 5000);
+      }, 60000);
       return () => clearTimeout(timer);
     }
   }, [isClient, router]);

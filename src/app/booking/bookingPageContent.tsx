@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Check, ChevronsUpDown, MapPin, User, Phone } from 'lucide-react';
+import { Check, ChevronsUpDown, MapPin, User, Phone, Mail } from 'lucide-react';
 
 import { destinations, providers, allRides } from '@/lib/data';
 import Image from 'next/image';
@@ -72,17 +72,17 @@ const RideItem = React.memo(({ ride, baseFare, onSelect, isSelected }: RideItemP
       <RadioGroupItem value={ride.id} id={ride.id} className="peer sr-only" />
       <Label
         htmlFor={ride.id}
-        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all h-full"
+        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-3 sm:p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all h-full min-h-[140px] sm:min-h-[160px]"
       >
         <div className='flex justify-between w-full items-start'>
           {providerIconPath && (
-            <Image src={providerIconPath} alt={ride.provider} width={24} height={24} className="h-6 w-auto object-contain" />
+            <Image src={providerIconPath} alt={ride.provider} width={20} height={20} className="h-5 w-auto sm:h-6 sm:w-auto object-contain" />
           )}
-          <RideIcon className="h-10 w-10 text-primary" />
+          <RideIcon className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
         </div>
-        <p className="text-xl font-bold font-headline mt-2">{ride.name}</p>
-        <p className="text-sm text-muted-foreground text-center flex-grow">{ride.description}</p>
-        <p className="text-2xl font-bold tracking-tighter mt-2">R{finalFare.toFixed(2)}</p>
+        <p className="text-lg sm:text-xl font-bold font-headline mt-2 text-center">{ride.name}</p>
+        <p className="text-xs sm:text-sm text-muted-foreground text-center flex-grow leading-tight">{ride.description}</p>
+        <p className="text-xl sm:text-2xl font-bold tracking-tighter mt-2">R{finalFare.toFixed(2)}</p>
       </Label>
     </div>
   );
@@ -102,6 +102,7 @@ export default function BookingPageContent() {
   // State for guest details
   const [isGuestModalOpen, setIsGuestModalOpen] = React.useState(false);
   const [guestName, setGuestName] = React.useState(searchParams.get('guestName') || '');
+  const [guestEmail, setGuestEmail] = React.useState(searchParams.get('guestEmail') || '');
   const [guestPhone, setGuestPhone] = React.useState(searchParams.get('guestPhone') || '');
 
   const handleBooking = () => {
@@ -117,19 +118,20 @@ export default function BookingPageContent() {
         destination,
         rideId: selectedRide,
         guestName,
+        guestEmail,
         guestPhone,
         token,
         finalFare,
       };
       localStorage.setItem('saferide_booking', JSON.stringify(bookingDetails));
-      const guestQuery = `&guestName=${encodeURIComponent(guestName)}&guestPhone=${encodeURIComponent(guestPhone)}&token=${token}`;
+      const guestQuery = `&guestName=${encodeURIComponent(guestName)}&guestEmail=${encodeURIComponent(guestEmail)}&guestPhone=${encodeURIComponent(guestPhone)}&token=${token}`;
       router.push(`/payment?destination=${destination}&rideId=${selectedRide}${guestQuery}`);
     }
   };
 
   const handleGuestDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if(guestName.trim() && guestPhone.trim()) {
+    if(guestName.trim() && (guestPhone.trim() || guestEmail.trim())) {
         setIsGuestModalOpen(false);
         handleBooking();
     }
@@ -153,19 +155,19 @@ export default function BookingPageContent() {
   };
 
   return (
-    <Card className="w-full max-w-3xl shadow-2xl relative">
-      <CardHeader className="pb-0">
+    <Card className="w-full max-w-3xl mx-auto shadow-2xl relative">
+      <CardHeader className="pb-0 px-4 sm:px-6">
         <div className="h-8 w-auto mb-4 mx-auto flex justify-center items-center">
           <Logo size="default" />
         </div>
-        <CardTitle className="text-3xl text-center">Book Your Ride</CardTitle>
-        <CardDescription className="text-center mb-8">
+        <CardTitle className="text-2xl sm:text-3xl text-center">Book Your Ride</CardTitle>
+        <CardDescription className="text-center mb-6 sm:mb-8 text-sm sm:text-base">
           Select your destination and ride preference
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6">
         <div className="space-y-1">
-          <Label htmlFor="destination" className="font-bold mb-1 block" style={{ fontSize: 26 }}>
+          <Label htmlFor="destination" className="font-bold mb-1 block text-xl sm:text-2xl">
             Where are you going?
           </Label>
           <Popover open={open} onOpenChange={setOpen}>
@@ -175,15 +177,15 @@ export default function BookingPageContent() {
                 role="combobox"
                 aria-expanded={open}
                 className={cn(
-                  'w-full justify-between text-lg h-12',
+                  'w-full justify-between text-base sm:text-lg h-11 sm:h-12',
                   !destination && 'text-muted-foreground'
                 )}
                 id="destination"
               >
                 {destination ? (
                   <>
-                    <MapPin className="mr-2 h-5 w-5" />
-                    {destinations.find((d) => d.value === destination)?.label}
+                    <MapPin className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="truncate">{destinations.find((d) => d.value === destination)?.label}</span>
                   </>
                 ) : (
                   'Select a destination'
@@ -204,11 +206,11 @@ export default function BookingPageContent() {
           <>
             <Separator />
             <div className="space-y-1">
-              <Label className="font-bold mb-1 block" style={{ fontSize: 26 }}>Choose your provider</Label>
-              <div className="text-sm text-muted-foreground mb-2">Select one or more to see options</div>
+              <Label className="font-bold mb-1 block text-xl sm:text-2xl">Choose your provider</Label>
+              <div className="text-xs sm:text-sm text-muted-foreground mb-2">Select one or more to see options</div>
               <ToggleGroup
                 type="multiple"
-                className="grid grid-cols-3 gap-2"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"
                 value={selectedProviders}
                 onValueChange={setSelectedProviders}
               >
@@ -217,13 +219,13 @@ export default function BookingPageContent() {
                       key={provider.id}
                       value={provider.id}
                       className={cn(
-                        'data-[state=on]:bg-primary data-[state=on]:text-primary-foreground flex h-24 w-full items-center justify-center rounded-xl border-2 border-muted bg-popover px-6 gap-4'
+                        'data-[state=on]:bg-primary data-[state=on]:text-primary-foreground flex h-20 sm:h-24 w-full items-center justify-center rounded-xl border-2 border-muted bg-popover px-3 sm:px-6 gap-2 sm:gap-4'
                       )}
                     >
                     {provider.icon && (
-                      <Image src={provider.icon} alt={provider.name} width={64} height={64} className="h-16 w-auto object-contain" />
+                      <Image src={provider.icon} alt={provider.name} width={48} height={48} className="h-12 sm:h-16 w-auto object-contain" />
                     )}
-                    <span className="font-bold text-lg">{provider.name}</span>
+                    <span className="font-bold text-sm sm:text-lg">{provider.name}</span>
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
@@ -232,12 +234,12 @@ export default function BookingPageContent() {
             <Separator />
 
             <div>
-              <Label className="font-bold mb-1 block" style={{ fontSize: 26 }}>Choose your ride</Label>
-              <div className="text-sm text-muted-foreground mb-2">Sorted from cheapest to most expensive</div>
+              <Label className="font-bold mb-1 block text-xl sm:text-2xl">Choose your ride</Label>
+              <div className="text-xs sm:text-sm text-muted-foreground mb-2">Sorted from cheapest to most expensive</div>
               <RadioGroup
                 value={selectedRide ?? ''}
                 onValueChange={setSelectedRide}
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                className="grid grid-cols-1 gap-3 sm:gap-4"
               >
                 {displayedRides.map((ride) => (
                   <RideItem
@@ -253,9 +255,9 @@ export default function BookingPageContent() {
 
             <Separator />
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 pb-4">
               <Button
-                className="w-full text-lg py-6"
+                className="w-full text-base sm:text-lg py-4 sm:py-6"
                 disabled={!selectedRide}
                 onClick={() => setIsGuestModalOpen(true)}
               >
@@ -272,7 +274,7 @@ export default function BookingPageContent() {
           <DialogHeader>
             <DialogTitle>Enter Guest Details</DialogTitle>
             <DialogDescription>
-              Please provide your name and phone number to continue.
+              Please provide your name and at least one contact method (phone number or email) to continue.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleGuestDetailsSubmit} className="space-y-4">
@@ -287,16 +289,36 @@ export default function BookingPageContent() {
               />
             </div>
             <div>
-              <Label htmlFor="guestPhone">Phone</Label>
+              <Label htmlFor="guestPhone">Phone Number (Optional)</Label>
               <Input
                 id="guestPhone"
                 value={guestPhone}
                 onChange={(e) => setGuestPhone(e.target.value)}
-                required
+                placeholder="e.g., +27 12 345 6789"
               />
+              <p className="text-sm text-gray-600 mt-1">
+                Provide either phone number or email for notifications
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="guestEmail">Email (Optional)</Label>
+              <Input
+                id="guestEmail"
+                type="email"
+                value={guestEmail}
+                onChange={(e) => setGuestEmail(e.target.value)}
+                placeholder="your.email@example.com"
+              />
+              <p className="text-sm text-gray-600 mt-1">
+                Provide either phone number or email for notifications
+              </p>
             </div>
             <DialogFooter>
-              <Button type="submit" className="w-full text-lg py-6">
+              <Button 
+                type="submit" 
+                className="w-full text-lg py-6" 
+                disabled={!guestName.trim() || (!guestPhone.trim() && !guestEmail.trim())}
+              >
                 Confirm Booking
               </Button>
             </DialogFooter>

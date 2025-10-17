@@ -12,7 +12,7 @@ export const drivers = [
   { name: 'Jason Mthembu', plate: 'CAA 901-234', rating: 5.0 },
 ];
 
-import { Car, Gem, Users, CreditCard, Banknote } from 'lucide-react';
+import { Car, Gem, Users, CreditCard, Banknote, Phone } from 'lucide-react';
 
 
 export const destinations = [
@@ -40,6 +40,7 @@ export const providers = [
 export const paymentMethods = [
   { id: 'card', name: 'Card', icon: CreditCard },
   { id: 'cash', name: 'Cash', icon: Banknote },
+  { id: 'phone', name: 'Phone Number', icon: Phone },
 ];
 
 export type Ride = {
