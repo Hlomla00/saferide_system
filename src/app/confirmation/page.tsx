@@ -57,7 +57,7 @@ function ConfirmationContent() {
     );
   }
 
-  const baseFare = 15;
+  const baseFare = 1.2; // USDC base fare for $1-2 range
   const finalFare = baseFare * ride.priceMultiplier;
 
   const driver = {
@@ -84,104 +84,162 @@ function ConfirmationContent() {
   };
 
   return (
-    <Card className="w-full max-w-lg shadow-2xl">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4">
-          <Logo />
-        </div>
-        <CardTitle className="text-4xl font-bold font-headline">Confirm Your Ride</CardTitle>
-        <CardDescription className="text-lg">Please review the details and confirm payment.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6 p-8">
-        <div className="p-4 border-2 border-dashed rounded-lg text-center">
-          <p className="text-muted-foreground font-semibold">Your Booking Token</p>
-          {bookingToken ? (
-             <p className="text-4xl font-bold tracking-widest text-primary font-mono">{bookingToken}</p>
-          ) : (
-            <Skeleton className="h-10 w-48 mx-auto mt-1" />
-          )}
-        </div>
-        
-        <div className="space-y-4 text-lg">
-          <div className="flex justify-between items-center">
-            <span className="font-semibold flex items-center gap-2"><MapPin className="text-muted-foreground"/> From</span>
-            <span>Current Location</span>
+    <div className="w-full max-w-2xl mx-auto p-3 sm:p-4">
+      <Card className="shadow-2xl">
+        <CardHeader className="pb-3 sm:pb-4 px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="h-10 w-10 sm:h-12 sm:w-12 p-0 touch-manipulation"
+            >
+              <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+            </Button>
+            <div className="h-8 w-auto flex justify-center items-center">
+              <Logo size="default" />
+            </div>
+            <div className="w-10 sm:w-12" /> {/* Spacer for centering */}
           </div>
-           <Separator />
-           <div className="flex justify-between items-center">
-            <span className="font-semibold flex items-center gap-2"><MapPin className="text-muted-foreground"/> To</span>
-            <span>{destinationLabel}</span>
-          </div>
-        </div>
+          <CardTitle className="text-xl sm:text-2xl md:text-3xl text-center">Confirm Your Ride</CardTitle>
+          <CardDescription className="text-center text-sm sm:text-base">
+            Review the details and confirm payment
+          </CardDescription>
+        </CardHeader>
 
-        <Separator />
-        
-        <div className="space-y-4 text-lg">
-          <div className="flex justify-between items-center">
-            <span className="font-semibold flex items-center gap-2"><Building className="text-muted-foreground"/> Provider</span>
-            <span className="flex items-center gap-2 font-semibold">{provider.name} <img src={providerIconPath} alt={provider.name} style={{height: 24, width: 'auto', objectFit: 'contain', display: 'inline-block', verticalAlign: 'middle'}} /></span>
+        <CardContent className="space-y-4 sm:space-y-6 px-3 sm:px-6">
+          {/* Booking Token */}
+          <div className="p-3 sm:p-4 border-2 border-dashed rounded-lg text-center bg-muted/30">
+            <p className="text-sm sm:text-base text-muted-foreground font-semibold mb-2">Your Booking Token</p>
+            {bookingToken ? (
+              <p className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-widest text-primary font-mono">{bookingToken}</p>
+            ) : (
+              <div className="h-8 sm:h-10 bg-muted animate-pulse rounded" />
+            )}
           </div>
-           <Separator />
-          <div className="flex justify-between items-center">
-            <span className="font-semibold flex items-center gap-2"><RideIcon className="text-muted-foreground"/> Ride Type</span>
-            <span>{ride.name}</span>
-          </div>
-           <Separator />
-           {guestName && (
-            <>
-              <div className="flex justify-between items-center">
-                <span className="font-semibold flex items-center gap-2"><Users className="text-muted-foreground"/> Rider</span>
-                <span>{guestName}</span>
-              </div>
-              <Separator />
-            </>
-           )}
-          <div className="flex justify-between items-center">
-            <span className="font-semibold flex items-center gap-2"><User className="text-muted-foreground"/> Driver</span>
-            <span>
-              {driver.name} ({driver.rating} <span className="text-yellow-400">★</span>)
-            </span>
-          </div>
-           <Separator />
-           <div className="flex justify-between items-center">
-            <span className="font-semibold flex items-center gap-2"><Car className="text-muted-foreground"/> License Plate</span>
-            <span className="font-mono bg-muted px-2 py-1 rounded-md">{driver.plate}</span>
-          </div>
-        </div>
 
-        <Separator />
-
-        <div>
-          <h3 className="text-2xl font-semibold font-headline mb-4 flex items-center gap-2"><CreditCard /> Payment Method</h3>
-          <div className="flex items-center gap-2">
-            {(() => {
-              const method = paymentMethods.find((m) => m.id === paymentMethod);
-              if (!method) return null;
-              const Icon = method.icon;
-              return (
-                <span className="flex items-center gap-2 font-semibold">
-                  <Icon className="h-8 w-8 text-primary" />
-                  <span className="text-lg font-semibold mt-2">{method.name}</span>
+          {/* Ride Details */}
+          <div className="bg-muted/50 p-3 sm:p-4 rounded-lg">
+            <h3 className="font-bold text-base sm:text-lg mb-3">Ride Details</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-sm sm:text-base">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  Destination
                 </span>
-              );
-            })()}
+                <span className="font-medium text-sm sm:text-base">{destinationLabel}</span>
+              </div>
+              
+              {guestName && (
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-sm sm:text-base">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    Passenger
+                  </span>
+                  <span className="font-medium text-sm sm:text-base">{guestName}</span>
+                </div>
+              )}
+              
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-sm sm:text-base">
+                  <Building className="h-4 w-4 text-muted-foreground" />
+                  Provider
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-sm sm:text-base">{provider?.name}</span>
+                  {providerIconPath && (
+                    <img
+                      src={providerIconPath}
+                      alt={provider?.name}
+                      className="w-5 h-5 sm:w-6 sm:h-6 object-contain"
+                    />
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-sm sm:text-base">
+                  <RideIcon className="h-4 w-4 text-muted-foreground" />
+                  Ride Type
+                </span>
+                <span className="font-medium text-sm sm:text-base">{ride.name}</span>
+              </div>
+            </div>
           </div>
-        </div>
-      </CardContent>
-      <CardFooter className="grid grid-cols-2 gap-4">
-        <Button variant="outline" size="lg" className="py-7 text-lg" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 h-5 w-5" /> Back
-        </Button>
-        <Button 
-          size="lg" 
-          className="py-7 text-lg transition-transform hover:scale-105" 
-          disabled={!bookingToken}
-          onClick={handleConfirmAndPay}
-        >
-          Confirm Ride
-        </Button>
-      </CardFooter>
-    </Card>
+
+          {/* Driver Information */}
+          <div className="bg-muted/50 p-3 sm:p-4 rounded-lg">
+            <h3 className="font-bold text-base sm:text-lg mb-3">Driver Information</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-sm sm:text-base">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  Driver
+                </span>
+                <span className="font-medium text-sm sm:text-base">{driver.name}</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-sm sm:text-base">
+                  <Car className="h-4 w-4 text-muted-foreground" />
+                  License Plate
+                </span>
+                <span className="font-medium text-sm sm:text-base font-mono">{driver.plate}</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-sm sm:text-base">Rating</span>
+                <span className="font-medium text-sm sm:text-base">⭐ {driver.rating}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Method */}
+          <div className="bg-muted/50 p-3 sm:p-4 rounded-lg">
+            <h3 className="font-bold text-base sm:text-lg mb-3">Payment Method</h3>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2 text-sm sm:text-base">
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                Method
+              </span>
+              <span className="font-medium text-sm sm:text-base capitalize">{paymentMethod}</span>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Price Display */}
+          <div className="text-center py-3 sm:py-4">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Wallet className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-lg sm:text-xl font-semibold">Total Fare</span>
+            </div>
+            <p className="text-3xl sm:text-4xl font-bold text-primary">${finalFare.toFixed(2)}</p>
+          </div>
+        </CardContent>
+
+        <CardFooter className="px-3 sm:px-6 pb-4 sm:pb-6">
+          <div className="w-full space-y-3">
+            <Button
+              onClick={handleConfirmAndPay}
+              className="w-full h-12 sm:h-14 text-base sm:text-lg font-bold touch-manipulation"
+              size="lg"
+            >
+              Confirm & Pay ${finalFare.toFixed(2)}
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={() => router.back()}
+              className="w-full h-10 sm:h-12 text-sm sm:text-base touch-manipulation"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Payment
+            </Button>
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
 

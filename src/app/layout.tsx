@@ -6,6 +6,12 @@ import { Toaster } from '@/components/ui/toaster';
 export const metadata: Metadata = {
   title: 'SafeRide',
   description: 'Your trusted ride-hailing service.',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
@@ -16,6 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <meta name="theme-color" content="#3b82f6" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -27,8 +37,8 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased">
-          <main className="min-h-screen flex flex-col items-center justify-center p-4">
+      <body className="font-body antialiased touch-manipulation">
+          <main className="min-h-screen flex flex-col items-center justify-start p-2 sm:p-4 overflow-y-auto">
             {children}
           </main>
           <Toaster />

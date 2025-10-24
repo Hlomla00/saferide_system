@@ -1,74 +1,95 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createEvmAccount } from '@/lib/cdp';
-
-// In-memory storage for demo purposes
-// In production, use a proper database like PostgreSQL, MongoDB, etc.
-const users: Array<{
-  id: string;
-  email: string;
-  name: string;
-  pin: string;
-  walletAddress: string;
-  createdAt: Date;
-}> = [];
+import { createEvmAccount } from '../../../../main';
+import connectDB from '@/lib/mongodb';
+import { User } from '@/lib/models';
+import { hashPin, isValidPin } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, name, pin } = await request.json();
+    await connectDB();
+    
+    const { phoneNumber, email, name, pin } = await request.json();
 
     // Validate input
-    if (!email || !name || !pin) {
+    if (!phoneNumber || !email || !name || !pin) {
       return NextResponse.json(
-        { error: 'Email, name, and PIN are required' },
+        { error: 'All fields are required' },
         { status: 400 }
       );
     }
 
-    if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+    if (!isValidPin(pin)) {
       return NextResponse.json(
         { error: 'PIN must be exactly 4 digits' },
         { status: 400 }
       );
     }
 
-    // Check if user already exists
-    const existingUser = users.find(user => user.email === email);
+    // Check if user already exists by phone number or email
+    const existingUser = await User.findOne({
+      $or: [
+        { phoneNumber },
+        { email }
+      ]
+    });
+
     if (existingUser) {
-      return NextResponse.json(
-        { error: 'User with this email already exists' },
-        { status: 409 }
-      );
+      // Return existing user data (excluding PIN for security)
+      const userResponse = {
+        id: existingUser._id.toString(),
+        phoneNumber: existingUser.phoneNumber,
+        email: existingUser.email,
+        name: existingUser.name,
+        walletAddress: existingUser.walletAddress,
+        createdAt: existingUser.createdAt
+      };
+      
+      return NextResponse.json({
+        success: true,
+        user: userResponse,
+        message: 'User already exists',
+        isExisting: true
+      });
     }
 
-    // Create wallet address using CDP
-    const account = await createEvmAccount();
+    // Create EVM account for new user
+    const evmAccount = await createEvmAccount();
     
-    // Create user profile
-    const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const newUser = {
-      id: userId,
+    // Hash the PIN before storing
+    const hashedPin = await hashPin(pin);
+
+    // Create new user in database
+    const newUser = new User({
+      phoneNumber,
       email,
       name,
-      pin, // In production, hash this PIN
-      walletAddress: account.address,
-      createdAt: new Date()
-    };
+      pin: hashedPin,
+      walletAddress: evmAccount.address
+    });
 
-    users.push(newUser);
+    await newUser.save();
 
     // Return user data (excluding PIN for security)
-    const { pin: _, ...userResponse } = newUser;
-    
+    const userResponse = {
+      id: newUser._id.toString(),
+      phoneNumber: newUser.phoneNumber,
+      email: newUser.email,
+      name: newUser.name,
+      walletAddress: newUser.walletAddress,
+      createdAt: newUser.createdAt
+    };
+
     return NextResponse.json({
       success: true,
       user: userResponse,
-      message: 'User profile and wallet created successfully'
-    }, { status: 201 });
+      message: 'User created successfully',
+      isExisting: false
+    });
 
   } catch (error) {
-    console.error('Error creating user profile:', error);
+    console.error('Error creating user:', error);
     return NextResponse.json(
-      { error: 'Failed to create user profile and wallet' },
+      { error: 'Failed to create user' },
       { status: 500 }
     );
   }
@@ -76,18 +97,27 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    await connectDB();
+    
     const { searchParams } = new URL(request.url);
+    const phoneNumber = searchParams.get('phoneNumber');
     const email = searchParams.get('email');
 
-    if (!email) {
+    if (!phoneNumber && !email) {
       return NextResponse.json(
-        { error: 'Email parameter is required' },
+        { error: 'Phone number or email is required' },
         { status: 400 }
       );
     }
 
-    const user = users.find(u => u.email === email);
-    
+    // Find user by phone number or email
+    const user = await User.findOne({
+      $or: [
+        ...(phoneNumber ? [{ phoneNumber }] : []),
+        ...(email ? [{ email }] : [])
+      ]
+    });
+
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
@@ -96,8 +126,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Return user data (excluding PIN for security)
-    const { pin: _, ...userResponse } = user;
-    
+    const userResponse = {
+      id: user._id.toString(),
+      phoneNumber: user.phoneNumber,
+      email: user.email,
+      name: user.name,
+      walletAddress: user.walletAddress,
+      createdAt: user.createdAt
+    };
+
     return NextResponse.json({
       success: true,
       user: userResponse

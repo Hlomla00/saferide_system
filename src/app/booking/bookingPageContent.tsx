@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 
-const baseFare = 15; // R15 base fare (Convenience fee per ride booked)
+const baseFare = 1.2; // USDC base fare for $1-2 range
 
 function DestinationList({
   onSelect,
@@ -70,20 +70,30 @@ const RideItem = React.memo(({ ride, baseFare, onSelect, isSelected }: RideItemP
   return (
     <div>
       <RadioGroupItem value={ride.id} id={ride.id} className="peer sr-only" />
-      <Label
-        htmlFor={ride.id}
-        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-3 sm:p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all h-full min-h-[140px] sm:min-h-[160px]"
+      <div
+        onClick={() => onSelect(ride.id)}
+        className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 sm:p-5 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all h-full min-h-[160px] sm:min-h-[180px] touch-manipulation active:scale-95"
       >
-        <div className='flex justify-between w-full items-start'>
+        <div className='flex justify-between w-full items-start mb-3'>
           {providerIconPath && (
-            <Image src={providerIconPath} alt={ride.provider} width={20} height={20} className="h-5 w-auto sm:h-6 sm:w-auto object-contain" />
+            <Image 
+              src={providerIconPath} 
+              alt={ride.provider} 
+              width={24} 
+              height={24} 
+              className="h-6 w-6 sm:h-7 sm:w-7 object-contain" 
+            />
           )}
-          <RideIcon className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
+          <RideIcon className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
         </div>
-        <p className="text-lg sm:text-xl font-bold font-headline mt-2 text-center">{ride.name}</p>
-        <p className="text-xs sm:text-sm text-muted-foreground text-center flex-grow leading-tight">{ride.description}</p>
-        <p className="text-xl sm:text-2xl font-bold tracking-tighter mt-2">R{finalFare.toFixed(2)}</p>
-      </Label>
+        <div className="flex-1 flex flex-col items-center justify-center text-center space-y-2">
+          <p className="text-lg sm:text-xl font-bold font-headline">{ride.name}</p>
+          <p className="text-sm sm:text-base text-muted-foreground leading-tight px-1">{ride.description}</p>
+        </div>
+        <div className="mt-3 pt-2 border-t border-muted w-full text-center">
+          <p className="text-xl sm:text-2xl font-bold tracking-tighter text-primary">${finalFare.toFixed(2)}</p>
+        </div>
+      </div>
     </div>
   );
 });
@@ -111,7 +121,6 @@ export default function BookingPageContent() {
       const token = Math.floor(10000 + Math.random() * 90000).toString();
       // Get ride and fare
       const ride = allRides.find(r => r.id === selectedRide);
-      const baseFare = 15;
       const finalFare = ride ? baseFare * ride.priceMultiplier : 0;
       // Store booking details in localStorage
       const bookingDetails = {
@@ -156,18 +165,18 @@ export default function BookingPageContent() {
 
   return (
     <Card className="w-full max-w-3xl mx-auto shadow-2xl relative">
-      <CardHeader className="pb-0 px-4 sm:px-6">
-        <div className="h-8 w-auto mb-4 mx-auto flex justify-center items-center">
+      <CardHeader className="pb-0 px-3 sm:px-6 py-3 sm:py-4">
+        <div className="h-8 w-auto mb-3 sm:mb-4 mx-auto flex justify-center items-center">
           <Logo size="default" />
         </div>
-        <CardTitle className="text-2xl sm:text-3xl text-center">Book Your Ride</CardTitle>
-        <CardDescription className="text-center mb-6 sm:mb-8 text-sm sm:text-base">
+        <CardTitle className="text-xl sm:text-2xl md:text-3xl text-center">Book Your Ride</CardTitle>
+        <CardDescription className="text-center mb-4 sm:mb-6 md:mb-8 text-sm sm:text-base">
           Select your destination and ride preference
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6">
+      <CardContent className="space-y-3 sm:space-y-4 md:space-y-6 px-3 sm:px-6">
         <div className="space-y-1">
-          <Label htmlFor="destination" className="font-bold mb-1 block text-xl sm:text-2xl">
+          <Label htmlFor="destination" className="font-bold mb-1 block text-lg sm:text-xl md:text-2xl">
             Where are you going?
           </Label>
           <Popover open={open} onOpenChange={setOpen}>
@@ -177,7 +186,7 @@ export default function BookingPageContent() {
                 role="combobox"
                 aria-expanded={open}
                 className={cn(
-                  'w-full justify-between text-base sm:text-lg h-11 sm:h-12',
+                  'w-full justify-between text-sm sm:text-base md:text-lg h-12 sm:h-12 md:h-14 touch-manipulation',
                   !destination && 'text-muted-foreground'
                 )}
                 id="destination"
@@ -205,27 +214,29 @@ export default function BookingPageContent() {
         {destination && (
           <>
             <Separator />
-            <div className="space-y-1">
-              <Label className="font-bold mb-1 block text-xl sm:text-2xl">Choose your provider</Label>
-              <div className="text-xs sm:text-sm text-muted-foreground mb-2">Select one or more to see options</div>
+            <div className="space-y-2 sm:space-y-3">
+              <Label className="font-bold text-lg sm:text-xl md:text-2xl">Filter by Provider (Optional)</Label>
               <ToggleGroup
                 type="multiple"
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"
                 value={selectedProviders}
                 onValueChange={setSelectedProviders}
+                className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3"
               >
                 {providers.map((provider) => (
-                    <ToggleGroupItem
-                      key={provider.id}
-                      value={provider.id}
-                      className={cn(
-                        'data-[state=on]:bg-primary data-[state=on]:text-primary-foreground flex h-20 sm:h-24 w-full items-center justify-center rounded-xl border-2 border-muted bg-popover px-3 sm:px-6 gap-2 sm:gap-4'
-                      )}
-                    >
-                    {provider.icon && (
-                      <Image src={provider.icon} alt={provider.name} width={48} height={48} className="h-12 sm:h-16 w-auto object-contain" />
-                    )}
-                    <span className="font-bold text-sm sm:text-lg">{provider.name}</span>
+                  <ToggleGroupItem
+                    key={provider.id}
+                    value={provider.id}
+                    className="flex flex-col items-center p-3 sm:p-4 h-16 sm:h-20 touch-manipulation"
+                    aria-label={`Filter by ${provider.name}`}
+                  >
+                    <Image
+                      src={provider.icon}
+                      alt={provider.name}
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 sm:h-8 sm:w-8 object-contain mb-1"
+                    />
+                    <span className="text-xs sm:text-sm font-medium">{provider.name}</span>
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
@@ -233,98 +244,174 @@ export default function BookingPageContent() {
 
             <Separator />
 
-            <div>
-              <Label className="font-bold mb-1 block text-xl sm:text-2xl">Choose your ride</Label>
-              <div className="text-xs sm:text-sm text-muted-foreground mb-2">Sorted from cheapest to most expensive</div>
-              <RadioGroup
-                value={selectedRide ?? ''}
-                onValueChange={setSelectedRide}
-                className="grid grid-cols-1 gap-3 sm:gap-4"
-              >
-                {displayedRides.map((ride) => (
-                  <RideItem
-                    key={ride.id}
-                    ride={ride}
-                    baseFare={baseFare}
-                    onSelect={setSelectedRide}
-                    isSelected={selectedRide === ride.id}
-                  />
-                ))}
+            <div className="space-y-2 sm:space-y-3">
+              <Label className="font-bold text-lg sm:text-xl md:text-2xl">Choose Your Ride</Label>
+              <RadioGroup value={selectedRide || ''} onValueChange={setSelectedRide}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                  {displayedRides.map((ride) => (
+                    <RideItem
+                      key={ride.id}
+                      ride={ride}
+                      baseFare={baseFare}
+                      onSelect={setSelectedRide}
+                      isSelected={selectedRide === ride.id}
+                    />
+                  ))}
+                </div>
               </RadioGroup>
             </div>
 
-            <Separator />
+            {selectedRide && (
+              <>
+                <Separator />
+                <div className="bg-muted/50 p-3 sm:p-4 rounded-lg">
+                  <h3 className="font-bold text-base sm:text-lg mb-2">Booking Summary</h3>
+                  <div className="space-y-1 text-sm sm:text-base">
+                    <p><strong>Destination:</strong> {destinationLabel}</p>
+                    <p><strong>Ride:</strong> {selectedRideData?.name}</p>
+                    <p><strong>Estimated Fare:</strong> ${(baseFare * (selectedRideData?.priceMultiplier || 1)).toFixed(2)}</p>
+                  </div>
+                </div>
 
-            <div className="flex flex-col gap-4 pb-4">
-              <Button
-                className="w-full text-base sm:text-lg py-4 sm:py-6"
-                disabled={!selectedRide}
-                onClick={() => setIsGuestModalOpen(true)}
-              >
-                {`Book to ${destinationLabel || 'Destination'}`}
-              </Button>
-            </div>
+                <Button
+                  onClick={() => setIsGuestModalOpen(true)}
+                  className="w-full h-12 sm:h-14 text-base sm:text-lg font-bold touch-manipulation"
+                  size="lg"
+                >
+                  Continue to Payment
+                </Button>
+              </>
+            )}
           </>
         )}
       </CardContent>
 
-      {/* Guest Details Dialog */}
-      <Dialog open={isGuestModalOpen} onOpenChange={setIsGuestModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Enter Guest Details</DialogTitle>
-            <DialogDescription>
-              Please provide your name and at least one contact method (phone number or email) to continue.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleGuestDetailsSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="guestName">Name</Label>
-              <Input
-                id="guestName"
-                value={guestName}
-                onChange={(e) => setGuestName(e.target.value)}
-                required
-                autoFocus
-              />
+      {/* Guest Details Modal/Drawer */}
+      {isMobile ? (
+        <Drawer open={isGuestModalOpen} onOpenChange={setIsGuestModalOpen}>
+          <DrawerContent className="px-4 pb-6">
+            <div className="mx-auto w-full max-w-sm">
+              <div className="mb-4 text-center">
+                <h2 className="text-lg font-bold">Guest Details</h2>
+                <p className="text-sm text-muted-foreground">Please provide your contact information</p>
+              </div>
+              <form onSubmit={handleGuestDetailsSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="guest-name" className="text-sm font-medium">Full Name *</Label>
+                  <Input
+                    id="guest-name"
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    required
+                    className="h-12 text-base"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="guest-phone" className="text-sm font-medium">Phone Number</Label>
+                  <Input
+                    id="guest-phone"
+                    type="tel"
+                    placeholder="Enter your phone number"
+                    value={guestPhone}
+                    onChange={(e) => setGuestPhone(e.target.value)}
+                    className="h-12 text-base"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="guest-email" className="text-sm font-medium">Email Address</Label>
+                  <Input
+                    id="guest-email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    className="h-12 text-base"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  * Name is required. Please provide either phone number or email address.
+                </p>
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsGuestModalOpen(false)}
+                    className="flex-1 h-12 touch-manipulation"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={!guestName.trim() || (!guestPhone.trim() && !guestEmail.trim())}
+                    className="flex-1 h-12 touch-manipulation"
+                  >
+                    Continue
+                  </Button>
+                </div>
+              </form>
             </div>
-            <div>
-              <Label htmlFor="guestPhone">Phone Number (Optional)</Label>
-              <Input
-                id="guestPhone"
-                value={guestPhone}
-                onChange={(e) => setGuestPhone(e.target.value)}
-                placeholder="e.g., +27 12 345 6789"
-              />
-              <p className="text-sm text-gray-600 mt-1">
-                Provide either phone number or email for notifications
-              </p>
-            </div>
-            <div>
-              <Label htmlFor="guestEmail">Email (Optional)</Label>
-              <Input
-                id="guestEmail"
-                type="email"
-                value={guestEmail}
-                onChange={(e) => setGuestEmail(e.target.value)}
-                placeholder="your.email@example.com"
-              />
-              <p className="text-sm text-gray-600 mt-1">
-                Provide either phone number or email for notifications
-              </p>
-            </div>
-            <DialogFooter>
-              <Button 
-                type="submit" 
-                className="w-full text-lg py-6" 
-                disabled={!guestName.trim() || (!guestPhone.trim() && !guestEmail.trim())}
-              >
-                Confirm Booking
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={isGuestModalOpen} onOpenChange={setIsGuestModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Enter Guest Details</DialogTitle>
+              <DialogDescription>
+                Please provide your name and at least one contact method (phone number or email) to continue.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleGuestDetailsSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="guestName">Name</Label>
+                <Input
+                  id="guestName"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </div>
+              <div>
+                <Label htmlFor="guestPhone">Phone Number (Optional)</Label>
+                <Input
+                  id="guestPhone"
+                  value={guestPhone}
+                  onChange={(e) => setGuestPhone(e.target.value)}
+                  placeholder="e.g., +27 12 345 6789"
+                />
+                <p className="text-sm text-gray-600 mt-1">
+                  Provide either phone number or email for notifications
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="guestEmail">Email (Optional)</Label>
+                <Input
+                  id="guestEmail"
+                  type="email"
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  placeholder="your.email@example.com"
+                />
+                <p className="text-sm text-gray-600 mt-1">
+                  Provide either phone number or email for notifications
+                </p>
+              </div>
+              <DialogFooter>
+                <Button 
+                  type="submit" 
+                  className="w-full text-lg py-6" 
+                  disabled={!guestName.trim() || (!guestPhone.trim() && !guestEmail.trim())}
+                >
+                  Confirm Booking
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
     </Card>
   );
 }

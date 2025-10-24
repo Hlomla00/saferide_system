@@ -27,4 +27,4 @@ async function createEvmAccount() {
 // Execute the account creation
 createEvmAccount().catch(console.error);
 
-export { cdp };
+export { cdp, createEvmAccount };

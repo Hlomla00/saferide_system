@@ -6,6 +6,62 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Ensure proper scrolling on mobile devices */
+html, body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: 100%;
+}
+
+/* Fix for mobile viewport height issues */
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Mobile touch optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection for inputs and content areas */
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  -khtml-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Improve touch targets for mobile */
+button, [role="button"], .cursor-pointer {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+
+/* Smooth scrolling for better mobile experience */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent zoom on input focus for iOS */
+input[type="text"], 
+input[type="email"], 
+input[type="tel"], 
+input[type="password"], 
+select, 
+textarea {
+  font-size: 16px;
+}
+
 @layer base {
   :root {
     --background: 0 0% 93.3%;
