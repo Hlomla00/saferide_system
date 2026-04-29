@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { allRides, destinations, providers, paymentMethods } from '@/lib/data';
+import { allRides, destinations, providers, paymentMethods, drivers } from '@/lib/data';
 import { ArrowLeft, Wallet, CreditCard, Banknote, Phone, Zap, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { Suspense, useMemo, useState, useEffect } from 'react';
@@ -27,6 +27,13 @@ function PaymentContent() {
   const guestName = searchParams.get('guestName');
   const guestEmail = searchParams.get('guestEmail');
   const guestPhone = searchParams.get('guestPhone');
+  const bookingToken = searchParams.get('token') || Math.floor(10000 + Math.random() * 90000).toString();
+
+  // Pick a driver once per payment session
+  const assignedDriver = useMemo(
+    () => drivers[Math.floor(Math.random() * drivers.length)],
+    []
+  );
 
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState<string>(guestPhone || '');
@@ -47,6 +54,11 @@ function PaymentContent() {
   const [showRideNowConsentDialog, setShowRideNowConsentDialog] = useState(false);
   const [rideNowConsentGiven, setRideNowConsentGiven] = useState(false);
   
+  // Card payment state
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+
   // RIDE NOW! specific state
   const [selectedBank, setSelectedBank] = useState<string | null>(null);
   const [showGoNowModal, setShowGoNowModal] = useState(false);
@@ -407,28 +419,24 @@ function PaymentContent() {
         }
       }
 
-      // Proceed to receipt page
+      // Proceed to confirmation page
       const params = new URLSearchParams({
         destination: destinationValue!,
         rideId: rideId!,
         payment: paymentMethod!,
         fare: finalFare.toFixed(2),
+        token: bookingToken,
+        driverName: assignedDriver.name,
+        driverPlate: assignedDriver.plate,
+        driverRating: assignedDriver.rating.toString(),
       });
-      
-      if (guestName) {
-        params.append('guestName', guestName);
-      }
-      if (currentEmail) {
-        params.append('guestEmail', currentEmail);
-      }
-      if (currentPhone) {
-        params.append('phoneNumber', currentPhone);
-      }
-      if (currentUserProfile?.walletAddress) {
-        params.append('walletAddress', currentUserProfile.walletAddress);
-      }
-      
-      router.push(`/receipt?${params.toString()}`);
+
+      if (guestName) params.append('guestName', guestName);
+      if (currentEmail) params.append('guestEmail', currentEmail);
+      if (currentPhone) params.append('phoneNumber', currentPhone);
+      if (currentUserProfile?.walletAddress) params.append('walletAddress', currentUserProfile.walletAddress);
+
+      router.push(`/confirmation?${params.toString()}`);
     } catch (error) {
       console.error('Error processing booking:', error);
       alert('An error occurred while processing your booking. Please try again.');
@@ -537,6 +545,65 @@ function PaymentContent() {
               </div>
             </RadioGroup>
           </div>
+
+          {/* Card Payment Form */}
+          {paymentMethod === 'card' && (
+            <>
+              <Separator />
+              <div className="space-y-4">
+                <h3 className="font-bold text-lg sm:text-xl">Card Details</h3>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="card-number">Card Number</Label>
+                    <Input
+                      id="card-number"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0000 0000 0000 0000"
+                      maxLength={19}
+                      value={cardNumber}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, '').slice(0, 16);
+                        setCardNumber(digits.replace(/(.{4})/g, '$1 ').trim());
+                      }}
+                      className="h-12 font-mono tracking-widest"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="card-expiry">Expiry (MM/YY)</Label>
+                      <Input
+                        id="card-expiry"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="MM/YY"
+                        maxLength={5}
+                        value={cardExpiry}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+                          setCardExpiry(digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits);
+                        }}
+                        className="h-12"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="card-cvv">CVV</Label>
+                      <Input
+                        id="card-cvv"
+                        type="password"
+                        inputMode="numeric"
+                        placeholder="•••"
+                        maxLength={4}
+                        value={cardCvv}
+                        onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        className="h-12"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Payment Method Specific Content */}
           {paymentMethod === 'phone' && (
@@ -688,7 +755,12 @@ function PaymentContent() {
           <div className="w-full space-y-3">
             <Button
               onClick={handleProceedToReceipt}
-              disabled={!paymentMethod || (paymentMethod === 'phone' && (!phoneNumber.trim() || walletPin.length !== 4 || !phoneConsentGiven)) || isCreatingProfile}
+              disabled={
+                !paymentMethod ||
+                (paymentMethod === 'card' && (cardNumber.replace(/\s/g, '').length !== 16 || cardExpiry.length !== 5 || cardCvv.length < 3)) ||
+                (paymentMethod === 'phone' && (!phoneNumber.trim() || walletPin.length !== 4 || !phoneConsentGiven)) ||
+                isCreatingProfile
+              }
               className="w-full h-12 sm:h-14 text-base sm:text-lg font-bold touch-manipulation"
               size="lg"
             >

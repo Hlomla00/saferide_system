@@ -18,7 +18,7 @@ function ReceiptContent() {
   const searchParams = useSearchParams();
   const [isClient, setIsClient] = useState(false);
   const [localData, setLocalData] = useState<any>(null);
-  const [driver, setDriver] = useState<any>(null);
+  const [driver, setDriver] = useState<{ name: string; plate: string; rating: number } | null>(null);
   // Auto-redirect to booking page after 5 seconds
   useEffect(() => {
     if (isClient) {
@@ -33,9 +33,8 @@ function ReceiptContent() {
   const destinationValue = searchParams.get('destination') || localData?.destination;
   const rideId = searchParams.get('rideId') || localData?.rideId;
   const token = searchParams.get('token') || localData?.token;
-  // Only allow card or cash
+  const fareParam = searchParams.get('fare') || localData?.finalFare;
   let paymentId = searchParams.get('payment') || localData?.payment || 'card';
-  // Allow all valid payment methods
   const validPaymentIds = paymentMethods.map(method => method.id);
   if (!validPaymentIds.includes(paymentId)) paymentId = 'card';
   const guestName = searchParams.get('guestName') || localData?.guestName;
@@ -55,16 +54,21 @@ function ReceiptContent() {
     const rideIdCheck = searchParams.get('rideId');
     const tokenCheck = searchParams.get('token');
     const paymentIdCheck = searchParams.get('payment');
-    const driverNameCheck = searchParams.get('driverName');
-    const guestNameCheck = searchParams.get('guestName');
-    if (!destinationValueCheck || !rideIdCheck || !tokenCheck || !paymentIdCheck || !driverNameCheck) {
+    if (!destinationValueCheck || !rideIdCheck || !tokenCheck || !paymentIdCheck) {
       const stored = localStorage.getItem('saferide_booking');
       if (stored) {
         setLocalData(JSON.parse(stored));
       }
     }
-    // Pick a random driver only on client
-    setDriver(drivers[Math.floor(Math.random() * drivers.length)]);
+    // Use driver passed from confirmation, or pick random as fallback
+    const urlDriverName = searchParams.get('driverName');
+    const urlDriverPlate = searchParams.get('driverPlate');
+    const urlDriverRating = searchParams.get('driverRating');
+    if (urlDriverName && urlDriverPlate) {
+      setDriver({ name: urlDriverName, plate: urlDriverPlate, rating: parseFloat(urlDriverRating || '4.8') });
+    } else {
+      setDriver(drivers[Math.floor(Math.random() * drivers.length)]);
+    }
   }, [searchParams]);
 
   if (!isClient || !driver) return (
@@ -97,16 +101,8 @@ function ReceiptContent() {
     );
   }
 
-  const baseFare = 1.2; // USDC base fare for $1-2 range
-  let finalFare = localData?.finalFare || baseFare * ride.priceMultiplier;
-  if (!localData?.finalFare) {
-    // Randomize but never less than 1.0 USDC
-    const minFare = 1.0; // Minimum USDC fare
-    if (finalFare < minFare) {
-      // Add a little randomization above 1.0 for realism
-      finalFare = minFare + Math.random() * 1.0; 
-    }
-  }
+  const baseFare = 1.2;
+  const finalFare = fareParam ? parseFloat(fareParam) : baseFare * ride.priceMultiplier;
   const RideIcon = ride.icon;
   const providerIconPath = provider.icon;
   const PaymentIcon = paymentMethod.icon;

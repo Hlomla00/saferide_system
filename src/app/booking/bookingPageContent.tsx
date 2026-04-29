@@ -109,11 +109,16 @@ export default function BookingPageContent() {
   const [open, setOpen] = React.useState(false);
   const isMobile = useIsMobile();
 
-  // State for guest details
+  // Pre-fill guest details from logged-in user session if available
+  const storedUser = React.useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    try { return JSON.parse(localStorage.getItem('saferide_user') || 'null'); } catch { return null; }
+  }, []);
+
   const [isGuestModalOpen, setIsGuestModalOpen] = React.useState(false);
-  const [guestName, setGuestName] = React.useState(searchParams.get('guestName') || '');
-  const [guestEmail, setGuestEmail] = React.useState(searchParams.get('guestEmail') || '');
-  const [guestPhone, setGuestPhone] = React.useState(searchParams.get('guestPhone') || '');
+  const [guestName, setGuestName] = React.useState(searchParams.get('guestName') || storedUser?.name || '');
+  const [guestEmail, setGuestEmail] = React.useState(searchParams.get('guestEmail') || storedUser?.email || '');
+  const [guestPhone, setGuestPhone] = React.useState(searchParams.get('guestPhone') || storedUser?.phoneNumber || '');
 
   const handleBooking = () => {
     if (destination && selectedRide) {
