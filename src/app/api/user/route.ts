@@ -11,9 +11,9 @@ export async function POST(request: NextRequest) {
     const { phoneNumber, email, name, pin } = await request.json();
 
     // Validate input
-    if (!phoneNumber || !email || !name || !pin) {
+    if (!phoneNumber || !name || !pin) {
       return NextResponse.json(
-        { error: 'All fields are required' },
+        { error: 'Phone number, name, and PIN are required' },
         { status: 400 }
       );
     }
@@ -25,13 +25,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists by phone number or email
-    const existingUser = await User.findOne({
-      $or: [
-        { phoneNumber },
-        { email }
-      ]
-    });
+    // Check if user already exists by phone number (and email if provided)
+    const orConditions: object[] = [{ phoneNumber }];
+    if (email) orConditions.push({ email });
+    const existingUser = await User.findOne({ $or: orConditions });
 
     if (existingUser) {
       // Return existing user data (excluding PIN for security)

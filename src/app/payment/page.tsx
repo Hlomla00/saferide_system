@@ -48,6 +48,7 @@ function PaymentContent() {
   const [rideNowConsentGiven, setRideNowConsentGiven] = useState(false);
   
   // RIDE NOW! specific state
+  const [selectedBank, setSelectedBank] = useState<string | null>(null);
   const [showGoNowModal, setShowGoNowModal] = useState(false);
   const [goNowWalletAddress, setGoNowWalletAddress] = useState<string>('');
   const [goNowWalletBalance, setGoNowWalletBalance] = useState<number>(0);
@@ -281,7 +282,7 @@ function PaymentContent() {
           userPhone: rideNowPhoneNumber || phoneNumber || '+27 123 456 789',
           loanAmount: totalLoanAmount,
           pickupLocation: 'Current Location',
-          destination: destination?.name || destinationValue,
+          destination: destination?.label || destinationValue,
           estimatedFare: finalFare,
           walletAddress: userWalletAddress,
           idNumber: rideNowIdNumber,
@@ -687,7 +688,7 @@ function PaymentContent() {
           <div className="w-full space-y-3">
             <Button
               onClick={handleProceedToReceipt}
-              disabled={!paymentMethod || (paymentMethod === 'phone' && (!phoneNumber.trim() || walletPin.length !== 4)) || isCreatingProfile}
+              disabled={!paymentMethod || (paymentMethod === 'phone' && (!phoneNumber.trim() || walletPin.length !== 4 || !phoneConsentGiven)) || isCreatingProfile}
               className="w-full h-12 sm:h-14 text-base sm:text-lg font-bold touch-manipulation"
               size="lg"
             >

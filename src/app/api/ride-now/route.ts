@@ -25,6 +25,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (typeof loanAmount !== 'number' || loanAmount <= 0) {
+      return NextResponse.json(
+        { error: 'Loan amount must be a positive number' },
+        { status: 400 }
+      );
+    }
+
     // Find user
     const user = await User.findOne({ phoneNumber: userPhone });
     if (!user) {

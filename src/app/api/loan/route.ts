@@ -65,6 +65,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (typeof loanAmount !== 'number' || loanAmount <= 0) {
+      return NextResponse.json(
+        { error: 'Loan amount must be a positive number' },
+        { status: 400 }
+      );
+    }
+
     // Find user by phone number
     const user = await User.findOne({ phoneNumber });
     
@@ -81,7 +88,7 @@ export async function POST(request: NextRequest) {
       userPhone: user.phoneNumber,
       userName: user.name,
       walletAddress: user.walletAddress,
-      loanAmount: parseFloat(loanAmount),
+      loanAmount: loanAmount,
       currency,
       status: transactionHash ? 'completed' : 'pending',
       transactionHash,

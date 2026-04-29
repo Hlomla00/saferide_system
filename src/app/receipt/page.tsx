@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { allRides, destinations, providers, paymentMethods } from '@/lib/data';
+import { allRides, destinations, providers, paymentMethods, drivers } from '@/lib/data';
 import Image from 'next/image';
 import { ArrowLeft, MapPin, Printer, Wallet, CheckCircle, Building, CreditCard, User, Users } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -64,11 +64,18 @@ function ReceiptContent() {
       }
     }
     // Pick a random driver only on client
-    const { drivers } = require('@/lib/data');
     setDriver(drivers[Math.floor(Math.random() * drivers.length)]);
   }, [searchParams]);
 
-  if (!isClient || !driver) return null; // or a loading skeleton
+  if (!isClient || !driver) return (
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="w-full max-w-lg space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
+    </div>
+  );
 
   const ride = allRides.find((r) => r.id === rideId);
   const provider = providers.find((p) => p.id === ride?.provider);
