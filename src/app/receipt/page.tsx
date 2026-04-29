@@ -101,7 +101,7 @@ function ReceiptContent() {
     );
   }
 
-  const baseFare = 1.2;
+  const baseFare = 35;
   const finalFare = fareParam ? parseFloat(fareParam) : baseFare * ride.priceMultiplier;
   const RideIcon = ride.icon;
   const providerIconPath = provider.icon;
@@ -233,7 +233,7 @@ function ReceiptContent() {
               Total Fare Paid
             </CardTitle>
             <p className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter mt-2">
-              ${finalFare.toFixed(2)}
+              R{finalFare.toFixed(2)}
             </p>
           </Card>
         </CardContent>

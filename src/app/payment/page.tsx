@@ -315,7 +315,7 @@ function PaymentContent() {
         setShowGoNowModal(false);
         
         // Show success message with transaction details
-        alert(`✅ Instant loan approved! $${totalLoanAmount.toFixed(2)} has been transferred to your wallet.\n\nTransaction Hash: ${result.data.paymentTransactionHash}\nRepayment Due: ${new Date(result.data.repaymentDueDate).toLocaleDateString()}\nTotal Repayment: $${result.data.totalRepaymentAmount.toFixed(2)}`);
+        alert(`✅ Instant loan approved! R${totalLoanAmount.toFixed(2)} has been transferred to your wallet.\n\nTransaction Hash: ${result.data.paymentTransactionHash}\nRepayment Due: ${new Date(result.data.repaymentDueDate).toLocaleDateString()}\nTotal Repayment: R${result.data.totalRepaymentAmount.toFixed(2)}`);
         
         // Proceed to receipt
         handleProceedToReceipt();
@@ -334,7 +334,7 @@ function PaymentContent() {
     return <PaymentSkeleton />;
   }
 
-  const baseFare = 1.2; // USDC base fare for $1-2 range
+  const baseFare = 35; // Base fare in ZAR
   const finalFare = baseFare * ride.priceMultiplier;
 
   // Provider and icons
@@ -378,9 +378,9 @@ function PaymentContent() {
           
           // Show appropriate notification based on mode
           if (loanResult.demoMode) {
-            alert(`🎭 Demo Mode: USDC loan of $${finalFare.toFixed(2)} simulated successfully! In production, this would transfer real USDC from the app loan wallet to your wallet.`);
+            alert(`🎭 Demo Mode: Loan of R${finalFare.toFixed(2)} simulated successfully! In production, this would transfer funds to your wallet.`);
           } else {
-            alert(`✅ USDC loan of $${finalFare.toFixed(2)} transferred successfully to your wallet! Transaction: ${loanResult.transactionHash}`);
+            alert(`✅ Loan of R${finalFare.toFixed(2)} transferred successfully to your wallet! Transaction: ${loanResult.transactionHash}`);
           }
 
           // Then process the USDC payment from user's wallet
@@ -533,10 +533,7 @@ function PaymentContent() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg sm:text-xl font-bold">${finalFare.toFixed(2)}</p>
-                          {method.id === 'phone' && (
-                            <p className="text-xs text-muted-foreground">USDC</p>
-                          )}
+                          <p className="text-lg sm:text-xl font-bold">R{finalFare.toFixed(2)}</p>
                         </div>
                       </div>
                     </div>
@@ -722,7 +719,7 @@ function PaymentContent() {
                       pattern="[0-9]{4}"
                     />
                     <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                      Required for crypto wallet creation and payments
+                      Required for wallet creation and payments
                     </p>
                   </div>
                 </div>
@@ -730,7 +727,7 @@ function PaymentContent() {
               
               <div className="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-xs sm:text-sm text-blue-800">
-                  💡 Your crypto wallet will be created automatically when you enter your phone number and PIN. You'll pay with USDC on Base network.
+                  💡 Your wallet will be created automatically when you enter your phone number and PIN.
                 </p>
               </div>
             </>
@@ -744,10 +741,7 @@ function PaymentContent() {
               <Wallet className="h-5 w-5 sm:h-6 sm:w-6" />
               <span className="text-lg sm:text-xl font-semibold">Total Fare</span>
             </div>
-            <p className="text-3xl sm:text-4xl font-bold text-primary">${finalFare.toFixed(2)}</p>
-            {paymentMethod === 'phone' && (
-              <p className="text-sm text-muted-foreground mt-1">USDC on Base Network</p>
-            )}
+            <p className="text-3xl sm:text-4xl font-bold text-primary">R{finalFare.toFixed(2)}</p>
           </div>
         </CardContent>
 
@@ -770,7 +764,7 @@ function PaymentContent() {
                   Processing...
                 </>
               ) : (
-                `Pay $${finalFare.toFixed(2)}`
+                `Pay R${finalFare.toFixed(2)}`
               )}
             </Button>
             
@@ -887,16 +881,16 @@ function PaymentContent() {
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span>Ride Cost:</span>
-                <span>${finalFare.toFixed(2)}</span>
+                <span>R{finalFare.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Loan Fee (5%):</span>
-                <span>${(finalFare * 0.05).toFixed(2)}</span>
+                <span>R{(finalFare * 0.05).toFixed(2)}</span>
               </div>
               <Separator />
               <div className="flex justify-between font-semibold">
                 <span>Total Loan Amount:</span>
-                <span>${(finalFare * 1.05).toFixed(2)}</span>
+                <span>R{(finalFare * 1.05).toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -917,7 +911,7 @@ function PaymentContent() {
             disabled={!userWalletAddress.trim() || !rideNowPhoneNumber.trim() || !rideNowIdNumber || rideNowIdNumber.length !== 13 || !rideNowPin || rideNowPin.length !== 4 || !rideNowConsentGiven}
             className="w-full h-12 text-lg font-bold"
           >
-            Pay ${(finalFare * 1.05).toFixed(2)}
+            Pay R{(finalFare * 1.05).toFixed(2)}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -932,15 +926,15 @@ function PaymentContent() {
             <div className="mt-3 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Ride Cost:</span>
-                <span>${finalFare.toFixed(2)}</span>
+                <span>R{finalFare.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Loan Fee (5%):</span>
-                <span>${(finalFare * 0.05).toFixed(2)}</span>
+                <span>R{(finalFare * 0.05).toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-semibold border-t pt-2">
                 <span>Total Amount:</span>
-                <span>${(finalFare * 1.05).toFixed(2)}</span>
+                <span>R{(finalFare * 1.05).toFixed(2)}</span>
               </div>
               <div className="mt-2 pt-2 border-t text-xs text-gray-600">
                 <p>Wallet: {userWalletAddress}</p>

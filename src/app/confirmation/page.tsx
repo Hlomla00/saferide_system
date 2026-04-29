@@ -51,7 +51,7 @@ function ConfirmationContent() {
     );
   }
 
-  const baseFare = 1.2;
+  const baseFare = 35;
   const finalFare = fare ? parseFloat(fare) : baseFare * ride.priceMultiplier;
   const RideIcon = ride.icon;
   const providerIconPath = provider.icon;
@@ -195,7 +195,7 @@ function ConfirmationContent() {
               <Wallet className="h-5 w-5 sm:h-6 sm:w-6" />
               <span className="text-lg sm:text-xl font-semibold">Total Fare</span>
             </div>
-            <p className="text-3xl sm:text-4xl font-bold text-primary">${finalFare.toFixed(2)}</p>
+            <p className="text-3xl sm:text-4xl font-bold text-primary">R{finalFare.toFixed(2)}</p>
           </div>
         </CardContent>
 

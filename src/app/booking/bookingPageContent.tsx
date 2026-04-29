@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 
-const baseFare = 1.2; // USDC base fare for $1-2 range
+const baseFare = 35; // Base fare in ZAR (South African Rand)
 
 function DestinationList({
   onSelect,
@@ -91,7 +91,7 @@ const RideItem = React.memo(({ ride, baseFare, onSelect, isSelected }: RideItemP
           <p className="text-sm sm:text-base text-muted-foreground leading-tight px-1">{ride.description}</p>
         </div>
         <div className="mt-3 pt-2 border-t border-muted w-full text-center">
-          <p className="text-xl sm:text-2xl font-bold tracking-tighter text-primary">${finalFare.toFixed(2)}</p>
+          <p className="text-xl sm:text-2xl font-bold tracking-tighter text-primary">R{finalFare.toFixed(2)}</p>
         </div>
       </div>
     </div>
@@ -274,7 +274,7 @@ export default function BookingPageContent() {
                   <div className="space-y-1 text-sm sm:text-base">
                     <p><strong>Destination:</strong> {destinationLabel}</p>
                     <p><strong>Ride:</strong> {selectedRideData?.name}</p>
-                    <p><strong>Estimated Fare:</strong> ${(baseFare * (selectedRideData?.priceMultiplier || 1)).toFixed(2)}</p>
+                    <p><strong>Estimated Fare:</strong> R{(baseFare * (selectedRideData?.priceMultiplier || 1)).toFixed(2)}</p>
                   </div>
                 </div>
 
